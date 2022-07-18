@@ -1,11 +1,14 @@
 package com.manhalrahman.database
 
+import com.manhalrahman.entities.GroupEntity
 import com.manhalrahman.entities.Transaction
 import com.manhalrahman.entities.User
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
 import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.sequenceOf
+import javax.swing.GroupLayout.Group
+import javax.xml.crypto.dsig.TransformService
 
 class DatabaseManager {
     private val hostname = "localhost"
@@ -20,6 +23,63 @@ class DatabaseManager {
         ktormDB = Database.connect(jdbcUrl)
     }
 
+    fun getUserById(id: Int): DBUserEntry? {
+        return ktormDB.sequenceOf(UserTable).firstOrNull { it.userid eq id }
+    }
+
+    fun getUsersByName(name: String): DBUserEntry? {
+        return ktormDB.sequenceOf(UserTable).firstOrNull { it.name eq name }
+    }
+
+    // transaction stuff
+    fun getTransaction(fromId: Int, toId: Int): Transaction? {
+        val query = ktormDB.from(TransactionTable).select().where {
+            (TransactionTable.fromId eq fromId) and (TransactionTable.toId eq toId)
+        }
+        var transaction: Transaction? = null
+
+        for (row in query) {
+            transaction = Transaction(
+                row[TransactionTable.fromId]!!,
+                row[TransactionTable.toId]!!,
+                row[TransactionTable.amount]!!
+            )
+        }
+        return transaction
+    }
+
+
+    fun createTransactionInDB(from: User, to: User, amount: Int) {
+        val fromId = from.userId
+        val toId = to.userId
+
+        ktormDB.insert(TransactionTable) {
+            set(it.fromId, fromId)
+            set(it.toId, toId)
+            set(it.amount, amount)
+        }
+    }
+
+    fun updateTransaction(transaction: Transaction): Boolean {
+        val updatedRows = ktormDB.update(TransactionTable) {
+            set(it.fromId, transaction.fromId)
+            set(it.toId, transaction.toId)
+            set(it.amount, transaction.amount)
+            where {
+                (TransactionTable.fromId eq transaction.fromId) and (TransactionTable.toId eq transaction.toId)
+            }
+        }
+
+        return updatedRows > 0
+    }
+
+    fun removeUser(id: Int): Boolean {
+        val deletedRows = ktormDB.delete(UserTable){it.userid eq id}
+        return deletedRows > 0
+    }
+
+
+    // group stuff
     fun getUsersInGroup(groupNo: Int): List<User> {
         val userList = mutableListOf<User>()
         for (row in ktormDB.from(UserTable).select()) {
@@ -38,31 +98,10 @@ class DatabaseManager {
         return userList
     }
 
-    fun getUserById(id: Int): DBUserEntry? {
-        return ktormDB.sequenceOf(UserTable).firstOrNull{it.userid eq id}
+    fun getGroupByName(groupName: String) : GroupEntity? {
+        return ktormDB.sequenceOf(GroupTable).firstOrNull{it.groupName eq groupName}
+            ?.let { GroupEntity(it.groupId, it.groupName) } ?: null
     }
-
-    fun getUsersByName(name: String): DBUserEntry? {
-        return ktormDB.sequenceOf(UserTable).firstOrNull{it.name eq name}
-    }
-
-    fun getTransaction(fromId: Int, toId: Int): Transaction? {
-        val query = ktormDB.from(TransactionTable).select().where{
-            (TransactionTable.fromId eq fromId) and (TransactionTable.toId eq toId)
-        }
-        var transaction: Transaction? = null
-
-        for(row in query) {
-            transaction = Transaction(
-                row[TransactionTable.fromId]!!,
-                row[TransactionTable.toId]!!,
-                row[TransactionTable.amount]!!
-            )
-        }
-        return transaction
-    }
-
-
 
 
 }
