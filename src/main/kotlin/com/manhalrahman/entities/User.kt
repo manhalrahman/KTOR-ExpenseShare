@@ -5,5 +5,6 @@ data class User(
     val groupNo: Int,
     val name: String,
     val email: String,
-    val phoneNumber: String
+    val phoneNumber: String,
+    val groupName: String
 )

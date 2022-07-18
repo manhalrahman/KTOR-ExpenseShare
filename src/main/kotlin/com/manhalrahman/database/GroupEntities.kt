@@ -13,5 +13,5 @@ interface DBGroupEntity : Entity<DBGroupEntity> {
 
 object GroupTable: Table<DBGroupEntity>("groupTable") {
     val groupId = int("groupId").primaryKey().bindTo{it.groupId}
-    val groupName = varchar("groupName").primaryKey().bindTo{it.groupName}
+    val groupName = varchar("groupName").bindTo{it.groupName}
 }

@@ -90,7 +90,8 @@ class DatabaseManager {
                         row[UserTable.groupNo]!!,
                         row[UserTable.name]!!,
                         row[UserTable.email]!!,
-                        row[UserTable.phoneNumber]!!
+                        row[UserTable.phoneNumber]!!,
+                        row[UserTable.groupName]!!
                     )
                 )
             }
@@ -102,6 +103,15 @@ class DatabaseManager {
         return ktormDB.sequenceOf(GroupTable).firstOrNull{it.groupName eq groupName}
             ?.let { GroupEntity(it.groupId, it.groupName) } ?: null
     }
+
+    fun addGroup(groupName: String) : GroupEntity {
+        val id = ktormDB.insertAndGenerateKey(GroupTable) {
+            set(it.groupName, groupName)
+        } as Int
+
+        return GroupEntity(id, groupName)
+    }
+
 
 
 }

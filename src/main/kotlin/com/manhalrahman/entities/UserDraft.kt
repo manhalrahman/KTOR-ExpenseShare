@@ -4,5 +4,6 @@ data class UserDraft(
     val name: String,
     val email: String,
     val mobile: String,
-    val preferredGroupNumber: Int
+    val groupNumber: Int,
+    val groupName: String
 )
