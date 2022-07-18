@@ -19,6 +19,5 @@ fun Application.configureRouting() {
         get("/totalTransactions/{id}") {
             call.respondText("Hello World!")
         }
-
     }
 }
