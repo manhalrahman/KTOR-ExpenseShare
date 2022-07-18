@@ -21,7 +21,6 @@ fun Application.configureRouting() {
                 )
                 return@get
             }
-
         }
 
         get("/totalTransactions/{id}") {
