@@ -10,10 +10,18 @@ fun Application.configureRouting() {
 
     routing {
         get("/") {
-            call.respondText("Hello World!")
+            call.respondText("Hello! This is the expense sharing app!")
         }
-        get("/totalTransactions/") {
-            call.respondText("HelloWorld!")
+        get("/users/{id}") {
+            val id = call.parameters["id"]?.toIntOrNull()
+            if(id == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    "Invalid ID"
+                )
+                return@get
+            }
+
         }
 
         get("/totalTransactions/{id}") {
