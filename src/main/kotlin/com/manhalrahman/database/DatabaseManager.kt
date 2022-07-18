@@ -3,6 +3,7 @@ package com.manhalrahman.database
 import com.manhalrahman.entities.GroupEntity
 import com.manhalrahman.entities.Transaction
 import com.manhalrahman.entities.User
+import com.manhalrahman.entities.UserDraft
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
 import org.ktorm.entity.firstOrNull
@@ -23,12 +24,34 @@ class DatabaseManager {
         ktormDB = Database.connect(jdbcUrl)
     }
 
+    // user stuff
+
     fun getUserById(id: Int): DBUserEntry? {
         return ktormDB.sequenceOf(UserTable).firstOrNull { it.userid eq id }
     }
 
     fun getUsersByName(name: String): DBUserEntry? {
         return ktormDB.sequenceOf(UserTable).firstOrNull { it.name eq name }
+    }
+
+    fun addUser(draft: UserDraft): User? {
+        val group = getGroupByName(draft.groupName) ?: return null
+        val id = ktormDB.insertAndGenerateKey(UserTable) {
+            set(it.name, draft.name)
+            set(it.groupName, draft.groupName)
+            set(it.groupNo, draft.groupNumber)
+            set(it.phoneNumber, draft.phoneNumber)
+            set(it.email, draft.email)
+        }
+
+        return User(
+            userId = draft.userId,
+            name = draft.name,
+            phoneNumber = draft.phoneNumber,
+            email = draft.email,
+            groupName = draft.groupName,
+            groupNo = draft.groupNumber
+        )
     }
 
     // transaction stuff
@@ -74,7 +97,7 @@ class DatabaseManager {
     }
 
     fun removeUser(id: Int): Boolean {
-        val deletedRows = ktormDB.delete(UserTable){it.userid eq id}
+        val deletedRows = ktormDB.delete(UserTable) { it.userid eq id }
         return deletedRows > 0
     }
 
@@ -99,19 +122,18 @@ class DatabaseManager {
         return userList
     }
 
-    fun getGroupByName(groupName: String) : GroupEntity? {
-        return ktormDB.sequenceOf(GroupTable).firstOrNull{it.groupName eq groupName}
+    fun getGroupByName(groupName: String): GroupEntity? {
+        return ktormDB.sequenceOf(GroupTable).firstOrNull { it.groupName eq groupName }
             ?.let { GroupEntity(it.groupId, it.groupName) } ?: null
     }
 
-    fun addGroup(groupName: String) : GroupEntity {
+    fun addGroup(groupName: String): GroupEntity {
         val id = ktormDB.insertAndGenerateKey(GroupTable) {
             set(it.groupName, groupName)
         } as Int
 
         return GroupEntity(id, groupName)
     }
-
 
 
 }
